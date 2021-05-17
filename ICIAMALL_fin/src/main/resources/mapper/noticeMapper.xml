@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iciamall.www.dao.NoticeDao">
+
+	<select id="count" resultType="int">
+		select /*+ index_ffs(notice noticepk_bno) */ count(bno) from notice
+	</select>
+
+	<select id="findAll" resultType="notice"> 
+		<![CDATA[
+		select * from
+			(
+				select rownum as rnum, n.* from 
+					(
+						select /*+ index_desc(notice notice_pk_bno)*/ bno,title,writer, writeTime, readCnt,commentcnt
+						from notice order by bno desc
+					) n
+				where rownum<=#{endRowNum}
+			)
+		where rnum>=#{startRowNum}
+		]]>
+	</select>
+	
+
+	<insert id="insert" parameterType="notice">
+		<selectKey keyProperty="bno" resultType="int" order="BEFORE">
+			select noticebno_seq.nextval from dual
+		</selectKey>
+		insert into notice values(#{bno},#{title},#{content},#{writer},sysdate,0, 0)
+	</insert>
+	
+	<select id="findByBno" resultType="notice">
+		select * from notice where bno=#{bno} and rownum=1
+	</select>
+	
+	<resultMap type="hashmap" id="mapForAttachment">
+		<id property="ano" column="ano" />
+		<result property="bno" column="abno" />
+		<result property="originalFileName" column="originalFileName" />
+		<result property="length" column="length" />
+		<result property="isImage" column="isImage" />
+	</resultMap>
+	
+	<resultMap type="hashmap" id="mapForRead">
+		<id property="bno" column="nbno" />
+		<result property="title" column="title" />
+		<result property="content" column="content" jdbcType="CLOB" javaType="java.lang.String" />
+		<result property="writer" column="nwriter" />
+		<result property="writeTime" column="writeTime" javaType="java.time.LocalDateTime" jdbcType="TIMESTAMP" />
+		<result property="readCnt" column="readCnt" />
+
+	</resultMap>
+	
+	<select id="findById" resultMap="mapForRead">
+		select n.bno nbno, n.title, n.content, n.writer nwriter, n.writeTime,n.readCnt from notice n 
+		where n.bno=a.bno and n.bno=#{bno}
+	</select>
+	
+	<update id="update">
+		update notice
+		<trim suffixOverrides="," prefix="set">
+			<if test="title!=null">title=#{title},</if>
+			<if test="content!=null">content=#{content},</if>
+			<if test="readCnt!=null">readCnt=#{readCnt},</if>
+			<if test="commentCnt!=null">commentCnt=#{commentCnt},</if>
+		</trim>
+		where bno=#{bno} and rownum=1
+	</update>
+	
+	<delete id="delete">
+		delete from notice where bno=#{bno} and rownum=1
+	</delete>
+	
+	
+</mapper>

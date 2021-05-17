@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iciamall.www.dao.UserDao">
+
+	<!-- 데이터베이스와 객체를 연결해주는 프레임워크 : ORM. 마이바티스는 SQL mapper -->
+	<insert id="insert">
+		insert into users(username, password, irum, email, phone, enabled)
+		values(#{username}, #{password}, #{irum}, #{email}, #{phone}, #{enabled})
+	</insert>
+
+	<!-- 오라클이 사용하는 user, comment, level 단어는 sql에 사용 불가 -->
+	<select id="findById" resultType="user">
+		select * from users where username=#{username} and rownum=1
+	</select>
+
+	<select id="findByEmail" resultType="user">
+		select * from users where
+		email=#{email} and rownum=1
+	</select>
+
+
+
+	<delete id="deleteById">
+		delete from users where username=#{username} and
+		rownum=1
+	</delete>
+
+
+</mapper>
